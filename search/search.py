@@ -18,6 +18,8 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+import math
+import random
 
 class SearchProblem:
     """
@@ -189,12 +191,12 @@ def simulatedAnnealing(problem):
     actionCurrentNode = []
     #temperature started at 1 and alpha (value to be multiplied) at 0.9
     T = 1.0
-    alpha = 0.9
+    alpha = 1.21
 
     while True:
         i = 0
         queue = util.Queue()
-        for state, direction cost in problem.getSuccessors(currentNode):
+        for state, direction, cost in problem.getSuccessors(currentNode):
             newPath = [direction]
             queue.push((state, newPath))
             i = i + 1
@@ -205,7 +207,7 @@ def simulatedAnnealing(problem):
             for j in range(0, randomNext+1):
                 nextNode, action = queue.pop()
         else:
-            nextNode, action = fila.pop()
+            nextNode, action = queue.pop()
 
         E = problem.getCostOfActions(action) - problem.getCostOfActions(actionCurrentNode)
         if E < 0:
