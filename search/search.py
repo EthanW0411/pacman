@@ -126,8 +126,28 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    visited = []
+    queue = util.PriorityQueue()
+    initialNode = problem.getStartState()
+    queue.push((initialNode, []), heuristic(initialNode, problem))
+
+    while not queue.isEmpty():
+        
+        currentNode, path = queue.pop()
+
+        if problem.isGoalState(currentNode):
+            return path
+
+        visited.append(currentNode)
+        
+        for succesor, direction, cost in problem.getSuccessors(currentNode):
+            if not succesor in visited:
+                newPath = path + [direction]
+                h = problem.getCostOfActions(newPath) + heuristic(succesor, problem)
+                queue.push((succesor, newPath), h)
+               
+    return path
 
 def hillClimbing(problem, heuristic=nullHeuristic):
     path = []
@@ -162,6 +182,50 @@ def hillClimbing(problem, heuristic=nullHeuristic):
 
     return path
 
+def simulatedAnnealing(problem):
+    path = []
+    # gets the initial node
+    currentNode = problem.getStartState()
+    actionCurrentNode = []
+    #temperature started at 1 and alpha (value to be multiplied) at 0.9
+    T = 1.0
+    alpha = 0.9
+
+    while True:
+        i = 0
+        queue = util.Queue()
+        for state, direction cost in problem.getSuccessors(currentNode):
+            newPath = [direction]
+            queue.push((state, newPath))
+            i = i + 1
+
+        randomNext = random.randint(0, i-1)
+
+        if randomNext > 0:
+            for j in range(0, randomNext+1):
+                nextNode, action = queue.pop()
+        else:
+            nextNode, action = fila.pop()
+
+        E = problem.getCostOfActions(action) - problem.getCostOfActions(actionCurrentNode)
+        if E < 0:
+            currentNode = nextNode
+            actionCurrentNode = action
+            path = path + actionCurrentNode
+        else:
+            if math.exp(-E/T):
+                currentNode = nextNode
+                actionCurrentNode = action
+                path = path + actionCurrentNode
+        
+
+        if problem.isGoalState(currentNode):
+            return path
+
+        T = T*alpha
+
+    return path
+
 
 # Abbreviations
 bfs = breadthFirstSearch
@@ -169,3 +233,4 @@ dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
 hcl = hillClimbing
+san = simulatedAnnealing
