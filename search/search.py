@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -96,8 +96,26 @@ def breadthFirstSearch(problem):
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    start = problem.getStartState()
+    visited = []
+    actionList = []
+    priorityQueue = util.PriorityQueue()
+
+    priorityQueue.push((start, actionList), nullHeuristic)
+
+    while not priorityQueue.isEmpty():
+     	node,actions = priorityQueue.pop()
+
+     	if not node in visited:
+     		visited.append(node)
+    		if problem.isGoalState(node):
+    			return actions
+    		for coord, direction, cost in problem.getSuccessors(node):
+    			if not coord in visited:
+    				newActions = actions + [direction]
+    				priorityQueue.push((coord, newActions), problem.getCostOfActions(newActions))
+
+    return actions
 
 def nullHeuristic(state, problem=None):
     """
@@ -111,9 +129,43 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
 
+def hillClimbing(problem, heuristic=nullHeuristic):
+    path = []
+    # gets the initial node
+    currentNode = problem.getStartState()
+    currentNode = ( (currentNode, []), heuristic(currentNode,problem))
+
+    while True:
+        cost = currentNode[1]
+
+        queue = util.PriorityQueue()
+
+        # get the neighborhood and add it in a priority queue
+        for state, direction, cost in problem.getSuccessors(currentNode[0][0]):
+           newPath = [direction]
+           score = problem.getCostOfActions(newPath) + heuristic(state, problem)
+
+           queue.push((state, newPath), score)
+
+        # analyze the first element from the queue
+        visited = []
+        visited = queue.pop()
+
+        # newCost = analyzed cost
+        newCost = problem.getCostOfActions(visited[1]) + heuristic(visited[0], problem) - 1
+
+        if (cost > newCost):
+            path = path + (visited[1])
+            currentNode = ( (visited[0], visited[1]), newCost)
+        else:
+            break
+
+    return path
+
 
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
+hcl = hillClimbing
