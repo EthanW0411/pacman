@@ -100,24 +100,23 @@ def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     start = problem.getStartState()
     visited = []
-    actionList = []
     priorityQueue = util.PriorityQueue()
 
-    priorityQueue.push((start, actionList), nullHeuristic)
+    priorityQueue.push((start, []), nullHeuristic)
 
     while not priorityQueue.isEmpty():
-     	node,actions = priorityQueue.pop()
+        node,path = priorityQueue.pop()
 
-     	if not node in visited:
-     		visited.append(node)
-    		if problem.isGoalState(node):
-    			return actions
-    		for coord, direction, cost in problem.getSuccessors(node):
-    			if not coord in visited:
-    				newActions = actions + [direction]
-    				priorityQueue.push((coord, newActions), problem.getCostOfActions(newActions))
+        if not node in visited:
+            visited.append(node)
+            if problem.isGoalState(node):
+                return path
+            for succesor, direction, cost in problem.getSuccessors(node):
+                if not succesor in visited:
+                    newPath = path + [direction]
+                    priorityQueue.push((succesor, newPath), problem.getCostOfActions(newPath))
 
-    return actions
+    return path
 
 def nullHeuristic(state, problem=None):
     """
@@ -153,35 +152,31 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
 def hillClimbing(problem, heuristic=nullHeuristic):
     path = []
-    # gets the initial node
     currentNode = problem.getStartState()
     currentNode = ( (currentNode, []), heuristic(currentNode,problem))
-
+    
     while True:
-        cost = currentNode[1]
-
+        custoEscolhido = currentNode[1]
+        
         queue = util.PriorityQueue()
-
-        # get the neighborhood and add it in a priority queue
-        for state, direction, cost in problem.getSuccessors(currentNode[0][0]):
+        
+        for succesor, direction, cost in problem.getSuccessors(currentNode[0][0]):
            newPath = [direction]
-           score = problem.getCostOfActions(newPath) + heuristic(state, problem)
+           score = problem.getCostOfActions(newPath) + heuristic(succesor, problem)
+           queue.push((succesor, newPath), score)
+        
+        #analisa primeiro da queue
+        analisado = []
+        analisado = queue.pop()
 
-           queue.push((state, newPath), score)
-
-        # analyze the first element from the queue
-        visited = []
-        visited = queue.pop()
-
-        # newCost = analyzed cost
-        newCost = problem.getCostOfActions(visited[1]) + heuristic(visited[0], problem) - 1
-
-        if (cost > newCost):
-            path = path + (visited[1])
-            currentNode = ( (visited[0], visited[1]), newCost)
+        custoAnalisado = problem.getCostOfActions(analisado[1]) + heuristic(analisado[0], problem) - 1
+        
+        if (custoEscolhido > custoAnalisado):
+            path = path + (analisado[1])
+            currentNode = ( (analisado[0], analisado[1]), custoAnalisado)
         else:
             break
-
+                   
     return path
 
 def simulatedAnnealing(problem):
@@ -189,9 +184,8 @@ def simulatedAnnealing(problem):
     # gets the initial node
     currentNode = problem.getStartState()
     actionCurrentNode = []
-    #temperature started at 1 and alpha (value to be multiplied) at 0.9
     T = 1.0
-    alpha = 1.21
+    alpha = 1.19
 
     while True:
         i = 0
@@ -220,14 +214,12 @@ def simulatedAnnealing(problem):
                 actionCurrentNode = action
                 path = path + actionCurrentNode
         
-
         if problem.isGoalState(currentNode):
             return path
 
         T = T*alpha
 
     return path
-
 
 # Abbreviations
 bfs = breadthFirstSearch
